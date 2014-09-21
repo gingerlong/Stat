@@ -1,0 +1,243 @@
+---
+output: pdf_document
+title: Does Orange Juice help Tooth Growth?
+author: Yangjing Long     
+date: 19.09.2014  
+---
+
+#Introduction
+
+Does Orange Juice helps Tooth Growth? In this project, by analyzing the ToothGrowth data in the R data sets package, using statistical inference, we found that Vitamin C and Orange Juice do help Tooth Growth. Under the constraint of data range in our data set, the more orange Juice you drink, or the more Vitamin you consume, your tooth will grow more.
+
+
+## Pre-processing and exploratory analysis.
+
+At first, we load the ToothGrowth data and perform some basic exploratory data analyses.
+
+We can see that the data set contains 3 columns, there are no Null or NA values. "len" stands for Tooth length, which are numeric values. "supp" stands for supplements, there are two values: OJ for Orange Juice and VC for Vitamin C. "dose" is a numeric variable representing the amount of supplement in milligrams.
+
+I used boxplots to show the how length is related with three dosages and two supplement types.  This exercise gives me a couple of useful hypotheses to work with for the T tests- namely whether the dosage has a significant impact and whether the dosage type is significant.
+
+```{r, echo=FALSE, fig.width=4, fig.height =3, message = FALSE}
+
+setwd("/home/user/data_analysis/Stat/")
+library(datasets)
+data(ToothGrowth)
+#head(ToothGrowth);
+boxplot(len~supp*dose, data=ToothGrowth, 
+  col=(c("gold","darkgreen")),
+  main="Tooth Growth", xlab="Suppliment and Dose")
+```
+
+
+
+## Provide a basic summary of the data.
+The output of the summary of the data is:
+
+```{r, echo=FALSE}
+ summary(ToothGrowth)
+ 
+cat("The mean of Tooth length is", mean(ToothGrowth$len),"and its standard deviation is", sd(ToothGrowth$len), "\n")
+```
+
+The Mean of ToothGrowth with supp OJ is 20.66 and the Mean of ToothGrowth with supp VC is 16.96. The sd of ToothGrowth with supp OJ is 6.606, and the standard derivation of ToothGrowth with supp VC is 8.266.
+
+The Mean of ToothGrowth with dosage level 0.5mg is 10.61, 1mg is 19.73, 2 mg is 26.1. The standard derivation of the ToothGrowth with the corresponding dosage levels are 4.5, 4.415, 3.774.
+
+## Confidence Intervals and Hypothesis Tests
+
+We use confidence intervals and hypothesis tests to compare tooth growth by supp and dose. We did 3 difference kinds of test as follows. 
+The 95% T confidence intervals of the difference are given for each tests. For convenience, all the null hypothesis we made is that the two groups are the same, even though base on the boxplot, for the case of dose 2, we should assume that OJ and VC for the tooth growth are similar. 
+
+### 1. Tooth Growth by supp (3 2-sample tests)
+First, we assume that dose is fixed and compare the impact of ToothGrowth length with difference of two supplement groups OJ and VS in dosage levels of 0.5, 1, 2 (results show in Appendix 1). 
+
+We use two sample unpared T-test, because we do not know that the data is from the same sample. For each dosage level, we computer the 95% t confidence Interval for the length difference of OJ and VC. The correspending intervals are (3.169 7.331), (3.853 8.007), (-2.298, 2.138). And the p values are 0.006, 0.001 and 0.96. so for the dosage level of 0.5 and 1, we should reject null hypothesis. However, in the case of dose level 2, the impact of OJ and VS are similar. The p value for two sample t-test is 0.96, so we accept null hypothesis, OJ and VC's impact to toothgrowth is not significant.
+
+
+### 2. Tooth Growth by dose (4 2-sample tests)
+We assume that supply is fixed and compare the impact of ToothGrowth for difference dose.
+(detailed results show in Appendix 2). 
+
+                        
+                     
+
+| two sample unpaired T test  | 95% CI        | p value |
+| ----------------------------|:-------------:| -------:|
+| OJ (0.5mg) vs OJ (1.0mg)    | 5.524 13.416  |8.785e-05|
+| OJ (1.0mg) vs OJ (2.0mg)    | 0.1886 6.5314 | 0.0392  |
+| VC (0.5mg) vs VC (1.0mg)    | 11.52 17.92   |3.655e-08|
+| VC (1.0mg) vs VC (2.0mg)    | 5.686 13.054  |9.156e-05|
+
+Based on the table, we reject all null hypethesis for these cases.
+
+### 3. Extra: test when dose change from 1 to 2, whether OJ has better impact for the teethgrowth than VC.
+
+
+
+OJ (1mg to 2mg) vs VC (1mg to 2mg), this result is in Appendix 3. The  95% CI is (-11.1823, -0.8377), and p value is 0.0252. We reject null hypethsis, that means that OJ and VC increasing from 1 mg to 2mg has sigificantly differenct impact to the Toothgrowth. 
+
+## Conclusions
+
+For all the tests, I assumption unpaired. unequal variance. 
+
+
+The impact of OJ and VC for the toothgrowth is significantly different for dose levels 0.5 and 1. In these cases, p values are 0.006 and 0.001 (two sample t-test), we should reject null hypothesis. However, in the case of dose level 2, the impact of OJ and VS are similar. the p value for two sample t-test is 0.96.
+
+And both the increase of the dose for OJ and VC has significantly impact to the toothgrowth. And for the test of the toothgrowth length increase for OJ and VC, from dose level increasing of 1 to 2, the p value is 0.0252, it means that it is significantly difference, when dose level increasing from 1 to 2, VC has higher impact to the teethgrowth than OJ.
+
+\newpage
+
+# Appendix:
+
+This Appendix includes the code which we could not include in the main report. 
+
+## Appendix 1: 
+
+#### t-test for the difference of the supply for three groups of dose level: dose = 0.5, dose =1, dose =2.
+```{r, echo=FALSE}
+cat("t-test for dose = 0.5") 
+g1 <- subset(ToothGrowth, supp=="OJ" & dose =="0.5")
+g2<-  subset(ToothGrowth, supp=="VC" & dose =="0.5")
+
+  difference <- g1$len - g2$len
+ mn <- mean(difference)
+ s <- sd(difference)
+ n <- 30
+
+ mn + c(-1, 1) * qt(.975, n-1) * s / sqrt(n)
+#t.test(difference)
+t.test(g2$len, g1$len, paired = FALSE)
+```
+
+```{r, echo=FALSE}
+cat("t-test for dose = 1") 
+g1 <- subset(ToothGrowth, supp=="OJ" & dose =="1")
+g2<-  subset(ToothGrowth, supp=="VC" & dose =="1")
+
+  difference <- g1$len - g2$len
+ mn <- mean(difference)
+ s <- sd(difference)
+ n <- 30
+
+ mn + c(-1, 1) * qt(.975, n-1) * s / sqrt(n)
+#t.test(difference)
+t.test(g2$len, g1$len, paired = FALSE)
+```
+
+```{r, echo=FALSE}
+cat("t-test for dose = 2")
+
+g1 <- subset(ToothGrowth, supp=="OJ" & dose == 2)
+g2<-  subset(ToothGrowth, supp=="VC" & dose == 2)
+
+  difference <- g1$len - g2$len
+ mn <- mean(difference)
+ s <- sd(difference)
+ n <- 30
+
+ mn + c(-1, 1) * qt(.975, n-1) * s / sqrt(n)
+#t.test(difference)
+t.test(g2$len, g1$len, paired = FALSE)
+```
+
+
+
+## Appendex 2: 
+
+#### T-test for fixed supply and difference dose.
+
+###### The difference from dose =0.5 to dose =1, for OJ.
+
+```{r, echo=FALSE}
+# t-test for OJ
+g1 <- subset(ToothGrowth, supp=="OJ" & dose == 0.5)
+g2<-  subset(ToothGrowth, supp=="OJ" & dose == 1)
+
+  difference <- g1$len - g2$len
+ mn <- mean(difference)
+ s <- sd(difference)
+ n <- length(difference)
+
+ mn + c(-1, 1) * qt(.975, n-1) * s / sqrt(n)
+#t.test(difference)
+t.test(g2$len, g1$len, paired = FALSE)
+```
+
+###### The difference from dose =1 to dose =2, for OJ.
+
+```{r, echo=FALSE}
+# t-test for OJ
+g1 <- subset(ToothGrowth, supp=="OJ" & dose == 1)
+g2<-  subset(ToothGrowth, supp=="OJ" & dose == 2)
+
+  difference <- g1$len - g2$len
+ mn <- mean(difference)
+ s <- sd(difference)
+ n <- length(difference)
+
+ mn + c(-1, 1) * qt(.975, n-1) * s / sqrt(n)
+#t.test(difference)
+t.test(g2$len, g1$len, paired = FALSE)
+```
+
+###### The difference from dose =0.5 to dose =1, for VC.
+
+```{r, echo=FALSE}
+# t-test for VC
+g1 <- subset(ToothGrowth, supp=="VC" & dose == 0.5)
+g2<-  subset(ToothGrowth, supp=="OJ" & dose == 1)
+
+  difference <- g1$len - g2$len
+ mn <- mean(difference)
+ s <- sd(difference)
+ n <- length(difference)
+
+ mn + c(-1, 1) * qt(.975, n-1) * s / sqrt(n)
+#t.test(difference)
+t.test(g2$len, g1$len, paired = FALSE)
+```
+
+###### The difference from dose =1 to dose =2, for VC.
+
+```{r, echo=FALSE}
+# t-test for VC
+g1 <- subset(ToothGrowth, supp=="VC" & dose == 1)
+g2<-  subset(ToothGrowth, supp=="VC" & dose == 2)
+
+  difference <- g1$len - g2$len
+ mn <- mean(difference)
+ s <- sd(difference)
+ n <- length(difference)
+
+ mn + c(-1, 1) * qt(.975, n-1) * s / sqrt(n)
+#t.test(difference)
+t.test(g2$len, g1$len, paired = FALSE)
+```
+
+## Appendix 3: 
+#### T-test for the change difference of VC and OJ when dose increasing from 1 to 2.
+
+```{r, echo=FALSE}
+g1_VC <- subset(ToothGrowth, supp=="VC" & dose == 1)
+g2_VC<-  subset(ToothGrowth, supp=="VC" & dose == 2)
+
+g1_OJ <- subset(ToothGrowth, supp=="OJ" & dose == 1)
+g2_OJ<-  subset(ToothGrowth, supp=="OJ" & dose == 2)
+
+difference_VC <- g1_VC$len - g2_VC$len
+difference_OJ <- g1_OJ$len - g2_OJ$len
+
+difference <- difference_VC - difference_OJ
+
+ mn <- mean(difference)
+ s <- sd(difference)
+ n <- length(difference)
+
+ mn + c(-1, 1) * qt(.975, n-1) * s / sqrt(n)
+#t.test(difference)
+t.test(difference_VC, difference_OJ, paired = FALSE)
+```
+
+
+
